@@ -18,6 +18,9 @@ $turn = 1
 #1マスの中心座標
 $centerPoint = []
 
+#プレイヤー
+$playar = ["player1", "player2"]
+
 TkRoot.new do
 	title("オセロ")
 end
@@ -38,16 +41,18 @@ end
 f2 = TkFrame.new(fRoot) do
 	pack "side" => "left"
 end
-lx = TkLabel.new(f2, "relief" => "ridge") do
-	text "0"
-	width 6
+
+
+lt = TkLabel.new(f2, "relief" => "ridge") do
+	text "ターン"
+	width 7
 	pack
 end
 
 
-ly = TkLabel.new(f2, "relief" => "ridge") do
-	text "0"
-	width 6
+$lp = TkLabel.new(f2, "relief" => "ridge") do
+	text $playar[0]
+	width 7
 	pack 
 end
 
@@ -58,8 +63,6 @@ $c = TkCanvas.new(f1) do
 	bind(
 		"Button", 
 		proc do |x, y| 
-			lx.text(x.to_s)
-			ly.text(y.to_s)
 			setChessman(x , y)
 		end,
 		"%x %y"
@@ -67,6 +70,7 @@ $c = TkCanvas.new(f1) do
 	pack
 end
 
+#盤面を初期化
 def init
 	i = 0
 	x = 17
@@ -101,7 +105,7 @@ def init
 end
 
 #座標から配列のインデックスを割り出す
-def convertPoint(p)
+def getIndex(p)
 	if 33 > p
 		i = 0
 	elsif 65 > p
@@ -149,19 +153,49 @@ end
 def setChessman(x, y)
 	cX = getCenterPoint(x)
 	cY = getCenterPoint(y)
+	i = getIndex(x)
+   	j = getIndex(y)	
 	#Tk.messageBox("message" => "#{cX},#{cY}")
+	if 0 != $boardArray[i][j]
+		return
+	end
 	if 1 == $turn
 		TkcImage.new($c, cX, cY) do
 			image $blackImg
 		end
+		$boardArray[i][j] = 1
 		$turn = -1
+		$lp.text = $playar[1]
 	else 
 		TkcImage.new($c, cX, cY) do
 			image $whiteImg
 		end
+		$boardArray[i][j] = -1
 		$turn = 1
+		$lp.text = $playar[0]
 	end
 
+end
+
+def revers(ii, jj)
+	#左　右　上　下　左上　右上　右下　左下
+	w = [-1, 1, 0,  0, -1, 1,  1, -1]
+	h = [ 0, 0, 1, -1,  1, 1, -1, -1]
+	f = false
+	i = 0
+	while 8 > i
+		j = 0
+		while 8 > j
+			j += 1
+		end
+		i += 1
+	end	
+
+	return f
+end
+
+def changeTurn(t)
+	$turn = t
 end
 
 init
