@@ -81,12 +81,12 @@ def init
 		y = 17
 		while 8 > j
 			if 3 == i && 3 == j || 4 == i && 4 == j
-				$boardArray[i][j] = 1
+				$boardArray[i][j] = -1
 				TkcImage.new($c, x, y) do
 					image $whiteImg
 				end
 			elsif 3 == i && 4 == j || 4 == i && 3 == j
-				$boardArray[i][j] = -1
+				$boardArray[i][j] = 1
 				TkcImage.new($c, x, y) do
 					image $blackImg
 				end
@@ -159,6 +159,11 @@ def setChessman(x, y)
 	if 0 != $boardArray[i][j]
 		return
 	end
+
+	if !revers(i, j)
+		return
+	end
+
 	if 1 == $turn
 		TkcImage.new($c, cX, cY) do
 			image $blackImg
@@ -177,18 +182,55 @@ def setChessman(x, y)
 
 end
 
-def revers(ii, jj)
+def revers(i, j)
 	#左　右　上　下　左上　右上　右下　左下
-	w = [-1, 1, 0,  0, -1, 1,  1, -1]
-	h = [ 0, 0, 1, -1,  1, 1, -1, -1]
+	w = [-1,1,0, 0,-1, 1,1,-1]
+	h = [ 0,0,-1,1,-1,-1,1, 1]
 	f = false
-	i = 0
-	while 8 > i
-		j = 0
-		while 8 > j
-			j += 1
+	c = 0
+	while 7 > c
+		ii = i
+		jj = j
+		while true
+			ii += w[c]
+			jj += h[c]
+			if 0 > ii || 0 > jj || 7 < ii || 7 < jj
+				break
+			end
+
+			#隣が同じ色もしくは何も無ければ何もしない
+			if $boardArray[ii][jj] == $turn && ii == i + w[c] && jj == j + h[c] || 0 == $boardArray[ii][jj]
+				break
+			end
+
+			if $boardArray[ii][jj] == $turn
+				f = true
+				Tk.messageBox("message" => "#{ii},#{jj}")
+				#while true
+					
+				#end
+				break
+			end
+
+
+			
+=begin
+			if $boardArray[ii][jj] == $turn
+				f = true
+				iii = i
+				jjj = j
+				while ii == iii && jj == jjj
+					iii += w[c]
+					jjj += h[c]
+					$boardArray[iii][jjj] = $turn
+					TkcImage.new($c, $centerPoint[iii], $centerPoint[jjj]) do
+						image $turn == 1 ? $blackImg : $whiteImg
+					end
+				end
+			end
+=end
 		end
-		i += 1
+		c += 1
 	end	
 
 	return f
