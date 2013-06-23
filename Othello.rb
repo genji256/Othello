@@ -186,9 +186,9 @@ def revers(i, j)
 	#左　右　上　下　左上　右上　右下　左下
 	w = [-1,1,0, 0,-1, 1,1,-1]
 	h = [ 0,0,-1,1,-1,-1,1, 1]
-	f = false
+	f = false	#ひっくり返す場所があるかのフラグ
 	c = 0
-	while 7 > c
+	while 8 > c
 		ii = i
 		jj = j
 		while true
@@ -203,32 +203,25 @@ def revers(i, j)
 				break
 			end
 
+			#2度めにターンプレイヤーの色が出たらひっくり返す
 			if $boardArray[ii][jj] == $turn
 				f = true
-				Tk.messageBox("message" => "#{ii},#{jj}")
-				#while true
-					
-				#end
-				break
-			end
-
-
-			
-=begin
-			if $boardArray[ii][jj] == $turn
-				f = true
+				#Tk.messageBox("message" => "#{ii},#{jj}")
 				iii = i
 				jjj = j
-				while ii == iii && jj == jjj
+				while true
 					iii += w[c]
 					jjj += h[c]
-					$boardArray[iii][jjj] = $turn
+					if iii == ii && jjj == jj
+						break
+					end
 					TkcImage.new($c, $centerPoint[iii], $centerPoint[jjj]) do
 						image $turn == 1 ? $blackImg : $whiteImg
 					end
+					$boardArray[iii][jjj] = $turn
 				end
+				break
 			end
-=end
 		end
 		c += 1
 	end	
