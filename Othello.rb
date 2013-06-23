@@ -12,14 +12,18 @@ $whiteImg = TkPhotoImage.new("file" => "./pic/white.gif")
 #盤面の配列
 $boardArray = [[], [], [], [], [], [], [], []]
 
-#順番：1なら黒-1なら白の番
-$turn = 1
+#色
+$BLACK = 1
+$WHITE = -1
+
+#順番
+$turn = $BLACK
 
 #1マスの中心座標
 $centerPoint = []
 
 #プレイヤー
-$playar = ["player1", "player2"]
+$playar = ["黒", "白"]
 
 TkRoot.new do
 	title("オセロ")
@@ -42,20 +46,82 @@ f2 = TkFrame.new(fRoot) do
 	pack "side" => "left"
 end
 
-
-lt = TkLabel.new(f2, "relief" => "ridge") do
-	text "ターン"
-	width 7
+resetButton = TkButton.new(f2) do
+	text "最初から"
+	width = 7
+	command(proc do
+		init
+	end)
 	pack
 end
 
-
-$lp = TkLabel.new(f2, "relief" => "ridge") do
-	text $playar[0]
-	width 7
-	pack 
+#黒のコマの数ラベルをまとめたフレーム
+blackNumFrame = TkFrame.new(f2) do
+	pack
 end
 
+TkLabel.new(blackNumFrame) do
+	text "黒:"
+	width 3
+	pack "side" => "left"
+end
+
+$blackNum = TkLabel.new(blackNumFrame) do
+	text "2"
+	width 3
+	pack "side" => "left"
+end
+
+#白のコマの数ラベルをまとめたフレーム
+whiteNumFrame = TkFrame.new(f2) do
+	pack
+end
+
+TkLabel.new(whiteNumFrame) do
+	text "白:"
+	width 3
+	pack "side" => "left"
+end
+
+$whiteNum = TkLabel.new(whiteNumFrame) do
+	text "2"
+	width 3
+	pack "side" => "left"
+end
+
+#どちらの順番かを表示するラベルのフレーム
+turnFrame = TkFrame.new(f2) do
+	pack
+end
+
+lt = TkLabel.new(turnFrame) do
+	text "ターン"
+	width 4
+	pack "side" => "left"
+end
+
+$lp = TkLabel.new(turnFrame) do
+	text $playar[0]
+	width 3
+	pack "side" => "left"
+end
+
+TkButton.new(f2) do
+	text "パス"
+	width 3
+	command(proc do
+		if $turn == $BLACK
+			$turn = $WHITE
+			$lp.text = $playar[1]
+		else
+			$turn = $BLACK
+			$lp.text = $playar[0]
+		end
+	end)
+	pack
+end
+
+#盤面のキャンバス
 $c = TkCanvas.new(f1) do
 	width 256
 	height 256
@@ -72,6 +138,8 @@ end
 
 #盤面を初期化
 def init
+	$boardArray = [[], [], [], [], [], [], [], []]
+	$turn = $BLACK
 	i = 0
 	x = 17
 
@@ -81,12 +149,12 @@ def init
 		y = 17
 		while 8 > j
 			if 3 == i && 3 == j || 4 == i && 4 == j
-				$boardArray[i][j] = -1
+				$boardArray[i][j] = $WHITE
 				TkcImage.new($c, x, y) do
 					image $whiteImg
 				end
 			elsif 3 == i && 4 == j || 4 == i && 3 == j
-				$boardArray[i][j] = 1
+				$boardArray[i][j] = $BLACK
 				TkcImage.new($c, x, y) do
 					image $blackImg
 				end
@@ -130,32 +198,32 @@ end
 #座標から各マスの中心座標を割り出す
 def getCenterPoint(p)
 	if 33 > p
-		i = $centerPoint[0]
+		c = $centerPoint[0]
 	elsif 65 > p
-		i = $centerPoint[1]
+		c = $centerPoint[1]
 	elsif 97 > p
-		i = $centerPoint[2]
+		c = $centerPoint[2]
 	elsif 129 > p
-		i = $centerPoint[3]
+		c = $centerPoint[3]
 	elsif 161 > p
-		i = $centerPoint[4]
+		c = $centerPoint[4]
 	elsif 193 > p
-		i = $centerPoint[5]
+		c = $centerPoint[5]
 	elsif 225 > p
-		i = $centerPoint[6]
+		c = $centerPoint[6]
 	else 
-		i = $centerPoint[7]
+		c = $centerPoint[7]
 	end
 
-	return i
+	return c
 end
 
+#コマを置く
 def setChessman(x, y)
 	cX = getCenterPoint(x)
 	cY = getCenterPoint(y)
 	i = getIndex(x)
    	j = getIndex(y)	
-	#Tk.messageBox("message" => "#{cX},#{cY}")
 	if 0 != $boardArray[i][j]
 		return
 	end
@@ -164,24 +232,28 @@ def setChessman(x, y)
 		return
 	end
 
-	if 1 == $turn
+	if $BLACK == $turn
 		TkcImage.new($c, cX, cY) do
 			image $blackImg
 		end
-		$boardArray[i][j] = 1
-		$turn = -1
+		$boardArray[i][j] = $BLACK
+		$turn = $WHITE
 		$lp.text = $playar[1]
 	else 
 		TkcImage.new($c, cX, cY) do
 			image $whiteImg
 		end
-		$boardArray[i][j] = -1
-		$turn = 1
+		$boardArray[i][j] = $WHITE
+		$turn = $BLACK
 		$lp.text = $playar[0]
 	end
 
+	countBlackAndWhite
+
 end
 
+#コマをひっくり返せるかの判定
+#ひっくり返せるならひっくり返す
 def revers(i, j)
 	#左　右　上　下　左上　右上　右下　左下
 	w = [-1,1,0, 0,-1, 1,1,-1]
@@ -216,7 +288,7 @@ def revers(i, j)
 						break
 					end
 					TkcImage.new($c, $centerPoint[iii], $centerPoint[jjj]) do
-						image $turn == 1 ? $blackImg : $whiteImg
+						image $turn == $BLACK ? $blackImg : $whiteImg
 					end
 					$boardArray[iii][jjj] = $turn
 				end
@@ -229,8 +301,25 @@ def revers(i, j)
 	return f
 end
 
-def changeTurn(t)
-	$turn = t
+#コマの数を数える
+def countBlackAndWhite
+	countBlack = 0
+	countWhite = 0
+	i = 0
+	while 8 > i
+		j = 0
+		while 8 > j
+			if $boardArray[i][j] == $BLACK
+				countBlack += 1
+			elsif $boardArray[i][j] == $WHITE
+				countWhite += 1
+			end
+			j += 1
+		end
+		i += 1
+	end
+	$blackNum.text = countBlack
+	$whiteNum.text = countWhite
 end
 
 init
