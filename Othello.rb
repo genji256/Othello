@@ -106,9 +106,10 @@ $lp = TkLabel.new(turnFrame) do
 	pack "side" => "left"
 end
 
+#パスボタン
 TkButton.new(f2) do
 	text "パス"
-	width 3
+	width 7
 	command(proc do
 		if $turn == $BLACK
 			$turn = $WHITE
@@ -195,35 +196,13 @@ def getIndex(p)
 	return i
 end
 
-#座標から各マスの中心座標を割り出す
-def getCenterPoint(p)
-	if 33 > p
-		c = $centerPoint[0]
-	elsif 65 > p
-		c = $centerPoint[1]
-	elsif 97 > p
-		c = $centerPoint[2]
-	elsif 129 > p
-		c = $centerPoint[3]
-	elsif 161 > p
-		c = $centerPoint[4]
-	elsif 193 > p
-		c = $centerPoint[5]
-	elsif 225 > p
-		c = $centerPoint[6]
-	else 
-		c = $centerPoint[7]
-	end
-
-	return c
-end
-
 #コマを置く
 def setChessman(x, y)
-	cX = getCenterPoint(x)
-	cY = getCenterPoint(y)
 	i = getIndex(x)
    	j = getIndex(y)	
+	cX = $centerPoint[i]
+	cY = $centerPoint[j]
+
 	if 0 != $boardArray[i][j]
 		return
 	end
